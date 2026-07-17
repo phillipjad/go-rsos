@@ -20,6 +20,7 @@ func NewMemStore() *MemStore {
 	return &MemStore{data: make(map[string][]byte)}
 }
 
+// Get implements Store.
 func (m *MemStore) Get(_ context.Context, key []byte) ([]byte, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -32,6 +33,7 @@ func (m *MemStore) Get(_ context.Context, key []byte) ([]byte, error) {
 	return append([]byte(nil), v...), nil
 }
 
+// Put implements Store.
 func (m *MemStore) Put(_ context.Context, key, value []byte) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -41,6 +43,7 @@ func (m *MemStore) Put(_ context.Context, key, value []byte) error {
 	return nil
 }
 
+// Delete implements Store.
 func (m *MemStore) Delete(_ context.Context, key []byte) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -50,6 +53,7 @@ func (m *MemStore) Delete(_ context.Context, key []byte) error {
 	return nil
 }
 
+// WriteBatch implements Store.
 func (m *MemStore) WriteBatch(_ context.Context, ops []Op) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -67,6 +71,7 @@ func (m *MemStore) WriteBatch(_ context.Context, ops []Op) error {
 	return nil
 }
 
+// DeleteRange implements Store.
 func (m *MemStore) DeleteRange(_ context.Context, start, end []byte) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

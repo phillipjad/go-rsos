@@ -1,0 +1,5 @@
+# GitVersion configuration (https://gitversion.net). Used by the CI and release workflows to derive a
+# SemVer from git history. The library is released by pushing the derived `vX.Y.Z` tag (see
+# .github/workflows/release.yml) — Go modules are versioned purely by semver git tags.
+mode: ContinuousDelivery
+next-version: 0.1.0

@@ -11,6 +11,18 @@ It is a persistent, storage-agnostic **Range-Summarizable Order-Statistics Store
 aggregate-augmented B+-trees where every subtree carries a composable fingerprint + count of its key
 range, so the fingerprint of *any* range is answered in `O(log n)` reads without scanning the range.
 
+## Contents
+
+- [Why go-rsos](#why-go-rsos)
+- [Built for large-scale distributed systems](#built-for-large-scale-distributed-systems)
+- [Install](#install)
+- [Quickstart](#quickstart)
+- [Bring your own storage](#bring-your-own-storage)
+- [Reconcile with a remote peer](#reconcile-with-a-remote-peer)
+- [Status](#status)
+- [References](#references)
+- [License](#license)
+
 ## Why go-rsos
 
 Most set-reconciliation libraries make one of two assumptions that break at scale. Either **the whole set
