@@ -1,0 +1,51 @@
+name: PR Hygiene
+
+# Enforces the branch policy that rulesets can't express natively:
+#   1. main may only be updated by a PR whose source branch is develop.
+#   2. Feature-branch PRs must be semi-linear: the branch's own commits carry
+#      no merge commits (rebase onto the base instead of merging it in). The
+#      develop -> main integration PR is exempt, since it legitimately carries
+#      the accumulated release history.
+# This job is a required status check, so a violation blocks the merge button.
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    name: PR Hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce main<-develop and semi-linear history
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          # 1. main only from develop.
+          if [ "$BASE_REF" = "main" ] && [ "$HEAD_REF" != "develop" ]; then
+            echo "::error::PRs into main must come from 'develop' (got '$HEAD_REF'). Merge to develop first."
+            exit 1
+          fi
+
+          # 2. Semi-linear: feature branches must not contain merge commits.
+          #    develop -> main is exempt (integration PR carries release history).
+          if [ "$HEAD_REF" != "develop" ]; then
+            merges=$(git rev-list --merges --count "$BASE_SHA..$HEAD_SHA")
+            if [ "$merges" -ne 0 ]; then
+              echo "::error::PR contains $merges merge commit(s). Rebase onto '$BASE_REF' instead of merging it into your branch."
+              exit 1
+            fi
+          fi
+
+          echo "PR hygiene checks passed."
