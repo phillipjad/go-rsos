@@ -1,8 +1,15 @@
 name: Release
 
-# Manual "publish" button. Derives the SemVer with GitVersion, tags it, and warms the public Go module
+# Manual "publish" button. Derives the version with GitVersion, tags it, and warms the public Go module
 # proxy so pkg.go.dev indexes the release. Go modules are not pushed to a registry — publishing is the
 # tag, and proxy.golang.org fetches on first request; the warm step just triggers that immediately.
+#
+# Branch-aware:
+#   - run from main    -> stable release  v<MajorMinorPatch>  e.g. v0.1.0           (GitHub "latest")
+#   - run from develop -> pre-release      v<SemVer>           e.g. v0.1.0-alpha.7   (marked pre-release)
+# `go get <module>@latest` resolves stable tags and skips pre-releases; a pre-release is only pulled when
+# requested explicitly (`@v0.1.0-alpha.7`) or via a pseudo-version. SemVer carries no +build metadata, so
+# the pre-release tag is a valid Go module version.
 #
 # Requires the repository to be PUBLIC for the proxy to serve the module. Releasing deliberately
 # (workflow_dispatch) rather than on every push avoids version churn.
@@ -21,10 +28,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Guard - releases run from main
-        if: ${{ !inputs.dry_run && github.ref_name != 'main' }}
+      - name: Guard - release branch
+        if: ${{ !inputs.dry_run && github.ref_name != 'main' && github.ref_name != 'develop' }}
         run: |
-          echo "::error::Releases must be run from 'main' (got '${{ github.ref_name }}'). Merge develop -> main first."
+          echo "::error::Releases run from 'main' (stable) or 'develop' (pre-release) only; got '${{ github.ref_name }}'."
           exit 1
       - uses: actions/checkout@v4
         with:
@@ -43,13 +50,22 @@ jobs:
       - name: Determine version
         id: gitversion
         uses: gittools/actions/gitversion/execute@v3
-      - name: Report version
-        run: echo "Release version -> v${{ steps.gitversion.outputs.majorMinorPatch }} (dry_run=${{ inputs.dry_run }})"
+      - name: Resolve release version
+        id: ver
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            v="v${{ steps.gitversion.outputs.majorMinorPatch }}"; pre=false
+          else
+            v="v${{ steps.gitversion.outputs.semVer }}"; pre=true
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$pre" >> "$GITHUB_OUTPUT"
+          echo "Resolved $v (prerelease=$pre, branch=${{ github.ref_name }}, dry_run=${{ inputs.dry_run }})"
 
       - name: Tag and publish
         if: ${{ !inputs.dry_run }}
         env:
-          VERSION: v${{ steps.gitversion.outputs.majorMinorPatch }}
+          VERSION: ${{ steps.ver.outputs.version }}
         run: |
           if git rev-parse "$VERSION" >/dev/null 2>&1; then
             echo "Tag $VERSION already exists; nothing to publish." && exit 0
@@ -65,5 +81,6 @@ jobs:
         if: ${{ !inputs.dry_run }}
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.gitversion.outputs.majorMinorPatch }}
+          tag_name: ${{ steps.ver.outputs.version }}
+          prerelease: ${{ steps.ver.outputs.prerelease }}
           generate_release_notes: true

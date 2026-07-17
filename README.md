@@ -150,9 +150,10 @@ contribute through the usual fork-and-PR flow.
 - **Keep history semi-linear.** Update your branch by *rebasing* it onto `develop` — do not merge
   `develop` into it. PRs whose branch contains merge commits are rejected by the `PR Hygiene` check, and
   a branch must be up to date with its base before it can merge.
-- **`main` is updated only by a PR from `develop`.** Releases are cut from `main` via the Release
-  workflow, which tags a clean `vX.Y.Z` derived by GitVersion; `develop` builds carry an `alpha`
-  pre-release label and are never tagged.
+- **`main` is updated only by a PR from `develop`.** Releases are cut via the Release workflow
+  (`workflow_dispatch`): run from `main` it tags a clean stable `vX.Y.Z`; run from `develop` it tags a
+  pre-release `vX.Y.Z-alpha.N`. GitVersion derives both. `go get <module>@latest` resolves the stable
+  release and skips pre-releases, so an `alpha` is pulled only when requested explicitly.
 
 ## References
 
