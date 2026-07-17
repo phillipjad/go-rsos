@@ -76,14 +76,17 @@ testing is both applicable and stronger than a fixed vector corpus:
    A fixed vector set checks a handful of cases; this checks the invariant over an unbounded random
    space.
 
-2. **Differential reconciliation convergence (the substitute for conformance vectors).** This is the
-   standard way reconciliation protocols are validated, and how negentropy's own harness works: run the
-   protocol between two independent implementations over randomized, controlled-overlap set pairs and
-   assert they converge to the *exact* symmetric difference. go-rsos will drive reconciliation between a
-   forest and a trivial brute-force peer over thousands of generated `(setA, setB)` pairs, asserting the
-   computed have/need sets equal the true difference. Randomized generation covers far more of the state
-   space than a static corpus, and the oracle (true set difference) is unarguable. This is the "large
-   standardized test set" — generated, not curated.
+2. **Differential reconciliation convergence (implemented — the substitute for conformance vectors).**
+   This is the standard way reconciliation protocols are validated, and how negentropy's own harness
+   works: run the protocol between two independent implementations over randomized, controlled-overlap
+   set pairs and assert they converge to the *exact* symmetric difference. The `Reconcile` driver is
+   tested against an independent brute-force `Peer` over generated `(setA, setB)` pairs — identical,
+   disjoint, large-overlap/tiny-diff, differing-digest, one-side-empty, and dozens of randomized trials
+   across varying split factors and resolve thresholds — asserting the computed local-only/remote-only
+   sets equal the true difference. It is also checked forest-vs-forest for symmetry (A's local-only ==
+   B's remote-only). Randomized generation covers far more of the state space than a static corpus, and
+   the oracle (true set difference) is unarguable. This is the "large standardized test set" —
+   generated, not curated.
 
 3. **Incremental-vs-bulk equivalence (implemented).** A forest built incrementally is byte-for-byte
    identical in every range fingerprint to one bulk-loaded via `Build` from the same set.
