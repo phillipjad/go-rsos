@@ -20,6 +20,7 @@ range, so the fingerprint of *any* range is answered in `O(log n)` reads without
 - [Bring your own storage](#bring-your-own-storage)
 - [Reconcile with a remote peer](#reconcile-with-a-remote-peer)
 - [Status](#status)
+- [Contributing](#contributing)
 - [References](#references)
 - [License](#license)
 
@@ -139,6 +140,19 @@ Negentropy / NIP-77 wire compatibility is intentionally **out of scope**: go-rso
 tuned for networked cloud K/V, not a Nostr wire implementation. A wire-compatible front-end could be
 added separately behind the same `Peer` interface if a concrete need arises — see
 [DESIGN.md](DESIGN.md) for the profile and the rationale.
+
+## Contributing
+
+`develop` is the default and integration branch; `main` holds released versions. Non-collaborators
+contribute through the usual fork-and-PR flow.
+
+- **Branch off `develop`** for any change, and open your PR against `develop`.
+- **Keep history semi-linear.** Update your branch by *rebasing* it onto `develop` — do not merge
+  `develop` into it. PRs whose branch contains merge commits are rejected by the `PR Hygiene` check, and
+  a branch must be up to date with its base before it can merge.
+- **`main` is updated only by a PR from `develop`.** Releases are cut from `main` via the Release
+  workflow, which tags a clean `vX.Y.Z` derived by GitVersion; `develop` builds carry an `alpha`
+  pre-release label and are never tagged.
 
 ## References
 

@@ -21,6 +21,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Guard - releases run from main
+        if: ${{ !inputs.dry_run && github.ref_name != 'main' }}
+        run: |
+          echo "::error::Releases must be run from 'main' (got '${{ github.ref_name }}'). Merge develop -> main first."
+          exit 1
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -38,11 +43,13 @@ jobs:
       - name: Determine version
         id: gitversion
         uses: gittools/actions/gitversion/execute@v3
+      - name: Report version
+        run: echo "Release version -> v${{ steps.gitversion.outputs.majorMinorPatch }} (dry_run=${{ inputs.dry_run }})"
 
       - name: Tag and publish
         if: ${{ !inputs.dry_run }}
         env:
-          VERSION: v${{ steps.gitversion.outputs.semVer }}
+          VERSION: v${{ steps.gitversion.outputs.majorMinorPatch }}
         run: |
           if git rev-parse "$VERSION" >/dev/null 2>&1; then
             echo "Tag $VERSION already exists; nothing to publish." && exit 0
@@ -58,5 +65,5 @@ jobs:
         if: ${{ !inputs.dry_run }}
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.gitversion.outputs.semVer }}
+          tag_name: v${{ steps.gitversion.outputs.majorMinorPatch }}
           generate_release_notes: true

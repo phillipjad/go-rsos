@@ -1,5 +1,15 @@
 # GitVersion configuration (https://gitversion.net). Used by the CI and release workflows to derive a
 # SemVer from git history. The library is released by pushing the derived `vX.Y.Z` tag (see
 # .github/workflows/release.yml) — Go modules are versioned purely by semver git tags.
-mode: ContinuousDelivery
+#
+# GitFlow/v1 gives the develop/main split we want out of the box: develop builds carry an `alpha`
+# pre-release label (e.g. 0.1.0-alpha.N), main increments Patch. Do NOT set a top-level `mode:` — in
+# GitVersion 6 that key silently overrides every branch, and its values were re-pointed from v5
+# (v6 `ContinuousDelivery` == v5 `ContinuousDeployment`), which is what made main emit `0.1.0-<n>`.
+#
+# The release workflow tags `v<MajorMinorPatch>` (the clean release number), because between tags the
+# main SemVer carries a continuous-delivery counter. main bumps Patch by default; a Minor/Major release
+# comes from a develop -> main merge or a `+semver: minor|major` commit message.
+workflow: GitFlow/v1
 next-version: 0.1.0
+tag-prefix: '[vV]?'
