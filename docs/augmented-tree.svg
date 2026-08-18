@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" width="960" height="640" font-family="ui-sans-serif,-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <style>
+    :root, svg {
+      --bg:#ffffff; --panel:#f6f8fa; --ink:#1f2328; --muted:#656d76; --line:#d0d7de;
+      --hit:#0969da; --hitbg:#ddf4ff; --descend:#9a6700; --descendbg:#fff8c5;
+      --skip:#8c959f; --skipbg:#f0f1f3; --good:#1a7f37;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root, svg {
+        --bg:#0d1117; --panel:#161b22; --ink:#e6edf3; --muted:#9198a1; --line:#30363d;
+        --hit:#4493f8; --hitbg:#0c2d6b; --descend:#d29922; --descendbg:#3d2e00;
+        --skip:#6e7681; --skipbg:#161b22; --good:#3fb950;
+      }
+    }
+    .bg{fill:var(--bg)}
+    .ttl{fill:var(--ink);font-size:21px;font-weight:700}
+    .sub{fill:var(--muted);font-size:13px}
+    .lbl{fill:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+    .ink{fill:var(--ink);font-size:12.5px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px}
+    .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5;rx:6}
+    .edge{stroke:var(--line);stroke-width:1.5;fill:none}
+  </style>
+  <rect class="bg" x="0" y="0" width="960" height="640"/>
+
+  <text class="ttl" x="40" y="40">Range fingerprint in O(log n) — the scan never happens</text>
+  <text class="sub" x="40" y="63">Every internal node stores, per child, that subtree's (fingerprint, count). A child wholly inside the query is answered</text>
+  <text class="sub" x="40" y="81">from its stored aggregate; only the two boundary children are ever descended.</text>
+
+  <!-- key space bar -->
+  <text class="lbl" x="40" y="116">key space  ·  128-bit, bytewise order</text>
+  <rect x="40" y="126" width="880" height="26" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5" rx="4"/>
+  <rect x="270" y="126" width="420" height="26" fill="var(--hitbg)" stroke="var(--hit)" stroke-width="1.5" rx="4"/>
+  <text class="mono" x="270" y="170" fill="var(--hit)" text-anchor="middle">lo</text>
+  <text class="mono" x="690" y="170" fill="var(--hit)" text-anchor="middle">hi</text>
+  <text class="ink" x="480" y="145" text-anchor="middle" fill="var(--hit)" font-size="12" font-weight="600">query range [lo, hi)</text>
+
+  <!-- internal node -->
+  <text class="lbl" x="40" y="205">internal node · 4 of 64 child slots shown</text>
+  <rect class="box" x="40" y="216" width="880" height="66"/>
+  <line class="edge" x1="260" y1="216" x2="260" y2="282"/>
+  <line class="edge" x1="480" y1="216" x2="480" y2="282"/>
+  <line class="edge" x1="700" y1="216" x2="700" y2="282"/>
+
+  <text class="mono" x="150" y="240" text-anchor="middle" fill="var(--muted)">minKey 0x1a…</text>
+  <text class="mono" x="150" y="262" text-anchor="middle" fill="var(--ink)">fp · count 812</text>
+  <text class="mono" x="370" y="240" text-anchor="middle" fill="var(--muted)">minKey 0x4c…</text>
+  <text class="mono" x="370" y="262" text-anchor="middle" fill="var(--ink)">fp · count 774</text>
+  <text class="mono" x="590" y="240" text-anchor="middle" fill="var(--muted)">minKey 0x93…</text>
+  <text class="mono" x="590" y="262" text-anchor="middle" fill="var(--ink)">fp · count 901</text>
+  <text class="mono" x="810" y="240" text-anchor="middle" fill="var(--muted)">minKey 0xc7…</text>
+  <text class="mono" x="810" y="262" text-anchor="middle" fill="var(--ink)">fp · count 688</text>
+
+  <!-- connectors -->
+  <path class="edge" d="M150 282 V310"/>
+  <path class="edge" d="M370 282 V310"/>
+  <path class="edge" d="M590 282 V310"/>
+  <path class="edge" d="M810 282 V310"/>
+
+  <!-- verdicts -->
+  <rect x="46" y="310" width="208" height="58" fill="var(--skipbg)" stroke="var(--skip)" stroke-width="1.5" stroke-dasharray="5 4" rx="6"/>
+  <text class="ink" x="150" y="333" text-anchor="middle" fill="var(--skip)" font-weight="600">disjoint</text>
+  <text class="mono" x="150" y="354" text-anchor="middle" fill="var(--skip)">skipped — 0 reads</text>
+
+  <rect x="266" y="310" width="208" height="58" fill="var(--descendbg)" stroke="var(--descend)" stroke-width="1.5" rx="6"/>
+  <text class="ink" x="370" y="333" text-anchor="middle" fill="var(--descend)" font-weight="600">straddles lo</text>
+  <text class="mono" x="370" y="354" text-anchor="middle" fill="var(--descend)">descend →</text>
+
+  <rect x="486" y="310" width="208" height="58" fill="var(--hitbg)" stroke="var(--hit)" stroke-width="2" rx="6"/>
+  <text class="ink" x="590" y="333" text-anchor="middle" fill="var(--hit)" font-weight="700">wholly covered</text>
+  <text class="mono" x="590" y="354" text-anchor="middle" fill="var(--hit)">use stored fp — 0 reads</text>
+
+  <rect x="706" y="310" width="208" height="58" fill="var(--descendbg)" stroke="var(--descend)" stroke-width="1.5" rx="6"/>
+  <text class="ink" x="810" y="333" text-anchor="middle" fill="var(--descend)" font-weight="600">straddles hi</text>
+  <text class="mono" x="810" y="354" text-anchor="middle" fill="var(--descend)">descend →</text>
+
+  <!-- subtrees -->
+  <path class="edge" d="M370 368 V396"/>
+  <path class="edge" d="M810 368 V396"/>
+  <path d="M590 368 V390" stroke="var(--hit)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+
+  <!-- descended leaf (left) -->
+  <rect class="box" x="266" y="396" width="208" height="52"/>
+  <text class="lbl" x="370" y="414" text-anchor="middle">leaf · filter by key</text>
+  <text class="mono" x="370" y="435" text-anchor="middle" fill="var(--ink)">fold digests ≥ lo</text>
+
+  <!-- NOT READ subtree (centre) — the point -->
+  <path d="M590 390 L684 488 L496 488 Z" fill="var(--hitbg)" stroke="var(--hit)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text class="mono" x="590" y="447" text-anchor="middle" fill="var(--hit)" font-weight="700">901 leaves</text>
+  <text class="mono" x="590" y="468" text-anchor="middle" fill="var(--hit)">never read</text>
+
+  <!-- descended leaf (right) -->
+  <rect class="box" x="706" y="396" width="208" height="52"/>
+  <text class="lbl" x="810" y="414" text-anchor="middle">leaf · filter by key</text>
+  <text class="mono" x="810" y="435" text-anchor="middle" fill="var(--ink)">fold digests &lt; hi</text>
+
+  <!-- formula strip -->
+  <rect x="40" y="506" width="880" height="94" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5" rx="6"/>
+  <text class="lbl" x="60" y="530">how the aggregate composes</text>
+  <text class="mono" x="60" y="554" fill="var(--ink)">fp(range) = Σ child.fp   (mod 2^256)</text>
+  <text class="mono" x="430" y="554" fill="var(--ink)">count(range) = Σ child.count</text>
+  <text class="sub" x="60" y="577">Modular addition, not XOR — XOR self-cancels identical digests, so duplicate leaves would vanish from the summary.</text>
+  <text class="sub" x="60" y="593">Order-insensitive, so two replicas agree byte-for-byte; incremental, so a leaf write costs O(1) per level, not a re-scan.</text>
+</svg>

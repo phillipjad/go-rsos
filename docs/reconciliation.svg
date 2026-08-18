@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 790" width="960" height="790" font-family="ui-sans-serif,-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <style>
+    :root, svg {
+      --bg:#ffffff; --panel:#f6f8fa; --ink:#1f2328; --muted:#656d76; --line:#d0d7de;
+      --prune:#1a7f37; --prunebg:#dafbe1; --act:#0969da; --actbg:#ddf4ff;
+      --split:#9a6700; --splitbg:#fff8c5; --diff:#cf222e; --diffbg:#ffebe9;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root, svg {
+        --bg:#0d1117; --panel:#161b22; --ink:#e6edf3; --muted:#9198a1; --line:#30363d;
+        --prune:#3fb950; --prunebg:#0f2f17; --act:#4493f8; --actbg:#0c2d6b;
+        --split:#d29922; --splitbg:#3d2e00; --diff:#f85149; --diffbg:#3c1618;
+      }
+    }
+    .bg{fill:var(--bg)}
+    .ttl{fill:var(--ink);font-size:21px;font-weight:700}
+    .sub{fill:var(--muted);font-size:13px}
+    .lbl{fill:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+    .ink{fill:var(--ink);font-size:12.5px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px}
+    .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5;rx:6}
+    .edge{stroke:var(--line);stroke-width:1.5;fill:none}
+  </style>
+  <rect class="bg" x="0" y="0" width="960" height="790"/>
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0 0 L9 4.5 L0 9 z" fill="var(--line)"/>
+    </marker>
+  </defs>
+
+  <text class="ttl" x="40" y="40">Reconciliation recurses only where the fingerprints disagree</text>
+  <text class="sub" x="40" y="63">Both sides summarise the same range. Equal summaries prune the whole subtree unread, so bytes moved track the size of the</text>
+  <text class="sub" x="40" y="81">difference, not the size of the set.</text>
+
+  <!-- two peers -->
+  <rect class="box" x="60" y="104" width="330" height="46"/>
+  <text class="mono" x="225" y="132" text-anchor="middle" fill="var(--ink)">local.RangeFingerprint(lo, hi)</text>
+  <rect class="box" x="570" y="104" width="330" height="46"/>
+  <text class="mono" x="735" y="132" text-anchor="middle" fill="var(--ink)">remote.RangeFingerprint(lo, hi)</text>
+  <path class="edge" d="M225 150 V178 H480 V192" marker-end="url(#a)"/>
+  <path class="edge" d="M735 150 V178 H480"/>
+  <text class="mono" x="480" y="167" text-anchor="middle" fill="var(--muted)">compare (fp, count)</text>
+
+  <!-- ladder -->
+  <rect x="60" y="200" width="840" height="52" fill="var(--prunebg)" stroke="var(--prune)" stroke-width="2" rx="6"/>
+  <text class="mono" x="80" y="222" fill="var(--prune)" font-weight="700">fp equal · count equal</text>
+  <text class="ink" x="80" y="242" fill="var(--prune)">prune — return immediately; this range and everything under it is never read again</text>
+
+  <rect x="60" y="262" width="840" height="52" fill="var(--actbg)" stroke="var(--act)" stroke-width="1.5" rx="6"/>
+  <text class="mono" x="80" y="284" fill="var(--act)" font-weight="700">one side count = 0</text>
+  <text class="ink" x="80" y="304" fill="var(--act)">single-sided — Entries() the non-empty side and take the range wholesale</text>
+
+  <rect x="60" y="324" width="840" height="52" fill="var(--actbg)" stroke="var(--act)" stroke-width="1.5" rx="6"/>
+  <text class="mono" x="80" y="346" fill="var(--act)" font-weight="700">local.count + remote.count ≤ 128</text>
+  <text class="ink" x="80" y="366" fill="var(--act)">narrow enough — Entries() both sides, merge-walk by key, emit the differing leaves</text>
+
+  <rect x="60" y="386" width="840" height="52" fill="var(--splitbg)" stroke="var(--split)" stroke-width="1.5" rx="6"/>
+  <text class="mono" x="80" y="408" fill="var(--split)" font-weight="700">otherwise</text>
+  <text class="ink" x="80" y="428" fill="var(--split)">Split(k = 16) on the denser side, then recurse into each child range</text>
+
+  <!-- alignment callout -->
+  <rect x="60" y="450" width="840" height="46" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="5 4" rx="6"/>
+  <text class="sub" x="80" y="470" fill="var(--ink)">Why the denser side splits: children are cut on <tspan class="mono">its</tspan> structural boundaries, but both peers are then fingerprinted over the</text>
+  <text class="sub" x="80" y="487" fill="var(--ink)"><tspan font-weight="700">same</tspan> child ranges — so the two sides stay aligned no matter which one produced the split.</text>
+
+  <!-- narrowing -->
+  <text class="lbl" x="40" y="540">what that costs on 100M records differing by two</text>
+
+  <rect x="60" y="552" width="840" height="24" fill="var(--splitbg)" stroke="var(--split)" stroke-width="1.5" rx="3"/>
+  <text class="mono" x="480" y="569" text-anchor="middle" fill="var(--split)">whole key space — 2 fingerprints exchanged, they differ</text>
+
+  <path class="edge" d="M375 576 L300 600 M428 576 L660 600" stroke-dasharray="4 3"/>
+
+  <g>
+    <rect x="60" y="600" width="840" height="24" fill="var(--prunebg)" stroke="var(--prune)" stroke-width="1.5" rx="3"/>
+    <rect x="300" y="600" width="360" height="24" fill="var(--splitbg)" stroke="var(--split)" stroke-width="1.5" rx="3"/>
+    <text class="mono" x="180" y="617" text-anchor="middle" fill="var(--prune)">pruned</text>
+    <text class="mono" x="480" y="617" text-anchor="middle" fill="var(--split)">1 of 16 differs</text>
+    <text class="mono" x="780" y="617" text-anchor="middle" fill="var(--prune)">pruned</text>
+  </g>
+
+  <path class="edge" d="M300 624 L240 648 M660 624 L720 648" stroke-dasharray="4 3"/>
+
+  <g>
+    <rect x="60" y="648" width="840" height="24" fill="var(--prunebg)" stroke="var(--prune)" stroke-width="1.5" rx="3"/>
+    <rect x="240" y="648" width="480" height="24" fill="var(--splitbg)" stroke="var(--split)" stroke-width="1.5" rx="3"/>
+    <text class="mono" x="480" y="665" text-anchor="middle" fill="var(--split)">zoomed: again 1 of 16 differs · 15 pruned</text>
+  </g>
+
+  <path class="edge" d="M240 672 L200 696 M720 672 L760 696" stroke-dasharray="4 3"/>
+
+  <g>
+    <rect x="60" y="696" width="840" height="26" fill="var(--actbg)" stroke="var(--act)" stroke-width="1.5" rx="3"/>
+    <rect x="430" y="696" width="14" height="26" fill="var(--diffbg)" stroke="var(--diff)" stroke-width="1.5"/>
+    <rect x="516" y="696" width="14" height="26" fill="var(--diffbg)" stroke="var(--diff)" stroke-width="1.5"/>
+    <text class="mono" x="220" y="713" text-anchor="middle" fill="var(--act)">≤128 combined → enumerate both sides</text>
+    <text class="mono" x="700" y="713" text-anchor="middle" fill="var(--diff)">2 differing leaves found</text>
+  </g>
+
+  <text class="sub" x="60" y="752" fill="var(--ink)">Depth is <tspan class="mono">log₁₆</tspan> of the key space, not the record count: a handful of round trips, a few hundred fingerprints, and the only</text>
+  <text class="sub" x="60" y="769" fill="var(--ink)">bulk transfer is the two records that actually differ.</text>
+</svg>

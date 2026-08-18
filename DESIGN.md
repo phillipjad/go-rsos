@@ -16,6 +16,10 @@ composable summary (an order-insensitive equality fingerprint + element count) o
 range fingerprint is O(log n) reads and never scans the range. This is the same core idea as
 negentropy's `BTreeLMDB` backend and Amparore's AELMDB.
 
+The two mechanisms this rests on are drawn out in [`docs/augmented-tree.svg`](docs/augmented-tree.svg)
+(how a range fingerprint avoids the scan) and [`docs/reconciliation.svg`](docs/reconciliation.svg)
+(how the recursion prunes everything that already agrees).
+
 ## Target substrate: partitioned, networked cloud KV
 
 The design center is what makes go-rsos diverge from every other RBSR implementation: it targets a

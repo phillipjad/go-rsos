@@ -11,6 +11,8 @@ It is a persistent, storage-agnostic **Range-Summarizable Order-Statistics Store
 aggregate-augmented B+-trees where every subtree carries a composable fingerprint + count of its key
 range, so the fingerprint of *any* range is answered in `O(log n)` reads without scanning the range.
 
+![An internal node stores, per child, that subtree's fingerprint and element count. A child whose key range falls wholly inside the query is answered from that stored aggregate, so its subtree is never read; only the two children straddling the range bounds are descended.](docs/augmented-tree.svg)
+
 ## Contents
 
 - [Why go-rsos](#why-go-rsos)
@@ -122,6 +124,8 @@ store's partitioning), supply a `KeyCodec` via `WithKeyCodec`. `Build` takes a s
 `Entries`). A `*Forest` is a `Peer` (reconcile two forests directly), and a networked client is a `Peer`
 by forwarding those three calls to a remote forest's endpoints. The protocol is request/response and
 transport-agnostic; the data exchanged is proportional to the difference.
+
+![Both peers fingerprint the same range and compare. Equal fingerprint and count prunes the range unread; a range only one side holds is taken wholesale; a range narrow enough is enumerated on both sides and merge-walked; anything else is split sixteen ways on the denser side and recursed.](docs/reconciliation.svg)
 
 ## Status
 
